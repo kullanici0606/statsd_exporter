@@ -386,7 +386,7 @@ func main() {
 			}
 		}
 
-		udpChan := make(chan []byte, 1024)
+		udpChan := make(chan []byte, 10000)
 		ul := &listener.StatsDUDPListener{
 			Conn:            uconn,
 			EventHandler:    eventQueue,

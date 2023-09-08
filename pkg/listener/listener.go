@@ -67,10 +67,14 @@ func (l *StatsDUDPListener) Listen() {
 			return
 		}
 
-		packetCopy := make([]byte, n)
-		copy(packetCopy, buf)
-		l.PacketQueue <- packetCopy
+		l.EnqueuePacket(buf[0:n])
 	}
+}
+
+func (l *StatsDUDPListener) EnqueuePacket(packet []byte) {
+	packetCopy := make([]byte, len(packet))
+	copy(packetCopy, packet)
+	l.PacketQueue <- packetCopy
 }
 
 func (l *StatsDUDPListener) ProcessPacketQueue() {
