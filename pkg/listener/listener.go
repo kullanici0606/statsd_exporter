@@ -43,6 +43,7 @@ type StatsDUDPListener struct {
 	SamplesReceived prometheus.Counter
 	TagErrors       prometheus.Counter
 	TagsReceived    prometheus.Counter
+	PacketQueue     chan []byte
 }
 
 func (l *StatsDUDPListener) SetEventHandler(eh event.EventHandler) {
@@ -51,6 +52,9 @@ func (l *StatsDUDPListener) SetEventHandler(eh event.EventHandler) {
 
 func (l *StatsDUDPListener) Listen() {
 	buf := make([]byte, 65535)
+
+	go l.ProcessPacketQueue()
+
 	for {
 		n, _, err := l.Conn.ReadFromUDP(buf)
 		if err != nil {
@@ -62,7 +66,18 @@ func (l *StatsDUDPListener) Listen() {
 			level.Error(l.Logger).Log("error", err)
 			return
 		}
-		l.HandlePacket(buf[0:n])
+
+		packetCopy := make([]byte, n)
+		copy(packetCopy, buf)
+		l.PacketQueue <- packetCopy
+	}
+}
+
+func (l *StatsDUDPListener) ProcessPacketQueue() {
+	level.Info(l.Logger).Log("msg", "Running in pipelining mode")
+	for {
+		packet := <-l.PacketQueue
+		l.HandlePacket(packet)
 	}
 }
 

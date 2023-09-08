@@ -386,6 +386,7 @@ func main() {
 			}
 		}
 
+		udpChan := make(chan []byte, 1024)
 		ul := &listener.StatsDUDPListener{
 			Conn:            uconn,
 			EventHandler:    eventQueue,
@@ -398,6 +399,7 @@ func main() {
 			SamplesReceived: samplesReceived,
 			TagErrors:       tagErrors,
 			TagsReceived:    tagsReceived,
+			PacketQueue:     udpChan,
 		}
 
 		go ul.Listen()
