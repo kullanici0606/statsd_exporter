@@ -295,6 +295,7 @@ func main() {
 		influxdbTagsEnabled  = kingpin.Flag("statsd.parse-influxdb-tags", "Parse InfluxDB style tags. Enabled by default.").Default("true").Bool()
 		libratoTagsEnabled   = kingpin.Flag("statsd.parse-librato-tags", "Parse Librato style tags. Enabled by default.").Default("true").Bool()
 		signalFXTagsEnabled  = kingpin.Flag("statsd.parse-signalfx-tags", "Parse SignalFX style tags. Enabled by default.").Default("true").Bool()
+		udpPacketQueueSize   = kingpin.Flag("statsd.udp-packet-queue-size", "Size of internal queue for processing udp packets.").Default("10000").Int()
 	)
 
 	promlogConfig := &promlog.Config{}
@@ -386,7 +387,7 @@ func main() {
 			}
 		}
 
-		udpChan := make(chan []byte, 10000)
+		udpChan := make(chan []byte, *udpPacketQueueSize)
 		ul := &listener.StatsDUDPListener{
 			Conn:            uconn,
 			EventHandler:    eventQueue,
